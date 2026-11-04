@@ -59,6 +59,7 @@ class ModelService:
         except ModelUnavailableError as exc:
             self._fail(str(exc))
         except Exception as exc:
+            logger.exception("Model load failed: %s", exc)  # full detail in server logs only
             self._fail(f"Model artifacts could not be loaded ({type(exc).__name__}).")
 
     def _fail(self, msg: str) -> None:
