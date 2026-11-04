@@ -1,0 +1,28 @@
+# secrets / local config
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# node
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# dataset: downloaded with `python -m ml.download_data`
+data/raw/*.csv
+data/raw/*.zip
+
+# editors / OS
+.DS_Store
+.idea/
+.vscode/

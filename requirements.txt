@@ -1,0 +1,15 @@
+# Runtime + training dependencies (Python 3.11–3.13).
+# Versions are pinned because the saved model (joblib) must be loaded with the
+# same library versions it was trained with.
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.2
+pydantic-settings==2.16.2
+numpy==2.3.5
+pandas==3.1.0
+scikit-learn==1.9.1
+scipy==1.18.1
+shap==0.54.1
+joblib==1.6.0
+lightgbm==4.7.0
+imbalanced-learn==0.14.2

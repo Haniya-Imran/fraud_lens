@@ -1,0 +1,599 @@
+{
+ "model_name": "LightGBM",
+ "model_version": "1.0.0",
+ "trained_at": "2026-11-04T16:48:16+00:00",
+ "training_seconds": 214.1,
+ "dataset": {
+  "name": "Credit Card Fraud Detection (ULB Machine Learning Group / Worldline)",
+  "description": "Card transactions by European cardholders over two days in September 2013. V1–V28 are PCA components released for confidentiality.",
+  "original_source": "https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud",
+  "download_mirror": "https://github.com/stat432/credit-analysis/raw/main/data-raw/creditcard.csv.zip",
+  "other_mirror": "https://zenodo.org/records/7395559 (CC BY 4.0 copy)",
+  "license": "Kaggle lists the Database Contents License (DbCL) v1.0; the Zenodo copy is CC BY 4.0.",
+  "citation": "A. Dal Pozzolo, O. Caelen, R. A. Johnson, G. Bontempi. Calibrating Probability with Undersampling for Unbalanced Classification. IEEE SSCI, 2015.",
+  "sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "quality": {
+   "rows": 284807,
+   "columns": 31,
+   "fraud": 492,
+   "legitimate": 284315,
+   "fraud_rate": 0.001727,
+   "missing_values": 0,
+   "exact_duplicate_rows_removed": 1081,
+   "fraud_rows_among_removed_duplicates": 19,
+   "zero_amount_rows": 1825,
+   "amount_max": 25691.16,
+   "amount_mean_fraud": 122.21,
+   "amount_mean_legitimate": 88.29,
+   "leakage_review": "No post-transaction fields exist. Raw Time (position inside the 2-day window) is replaced by hour of day; the split itself is by time."
+  }
+ },
+ "currency": "EUR",
+ "currency_note": "The dataset does not state a currency; EUR is assumed because cardholders are European.",
+ "split": {
+  "method": "time-ordered (by Time), 60/20/20",
+  "train": {
+   "rows": 170235,
+   "fraud": 342,
+   "time_range_s": [
+    0.0,
+    120392.0
+   ]
+  },
+  "validation": {
+   "rows": 56745,
+   "fraud": 57,
+   "time_range_s": [
+    120393.0,
+    145233.0
+   ]
+  },
+  "test": {
+   "rows": 56746,
+   "fraud": 74,
+   "time_range_s": [
+    145234.0,
+    172792.0
+   ]
+  }
+ },
+ "imbalance_handling": "Compared no weighting, class weights, SMOTE inside the training pipeline (never before splitting) and boosted trees; selected by validation PR-AUC.",
+ "selection_rule": "Models within 0.01 of the best validation PR-AUC are treated as equivalent; among them the best-calibrated (lowest validation Brier score) is chosen, because scores are shown to users and the decision threshold must be adjustable.",
+ "comparison": [
+  {
+   "model": "Baseline (class prior)",
+   "complexity_rank": 0,
+   "validation": {
+    "pr_auc": 0.001,
+    "roc_auc": 0.5,
+    "brier": 0.001004
+   },
+   "fit_seconds": 0.1,
+   "validation_at_best_threshold": {
+    "threshold": 0.5,
+    "precision": 0.0,
+    "recall": 0.0,
+    "net_benefit": 0.0
+   }
+  },
+  {
+   "model": "Logistic Regression",
+   "complexity_rank": 1,
+   "validation": {
+    "pr_auc": 0.6373,
+    "roc_auc": 0.9697,
+    "brier": 0.000567
+   },
+   "fit_seconds": 0.5,
+   "validation_at_best_threshold": {
+    "threshold": 0.1,
+    "precision": 0.6269,
+    "recall": 0.7368,
+    "net_benefit": 6788.58
+   }
+  },
+  {
+   "model": "Logistic Regression + class weights",
+   "complexity_rank": 1,
+   "validation": {
+    "pr_auc": 0.7764,
+    "roc_auc": 0.9738,
+    "brier": 0.032598
+   },
+   "fit_seconds": 0.9,
+   "validation_at_best_threshold": {
+    "threshold": 0.99,
+    "precision": 0.4592,
+    "recall": 0.7895,
+    "net_benefit": 6716.98
+   }
+  },
+  {
+   "model": "Logistic Regression + SMOTE",
+   "complexity_rank": 2,
+   "validation": {
+    "pr_auc": 0.7016,
+    "roc_auc": 0.9645,
+    "brier": 0.002463
+   },
+   "fit_seconds": 1.5,
+   "validation_at_best_threshold": {
+    "threshold": 0.88,
+    "precision": 0.6471,
+    "recall": 0.7719,
+    "net_benefit": 6861.3
+   }
+  },
+  {
+   "model": "Random Forest + class weights",
+   "complexity_rank": 3,
+   "validation": {
+    "pr_auc": 0.7767,
+    "roc_auc": 0.9401,
+    "brier": 0.000337
+   },
+   "fit_seconds": 134.2,
+   "validation_at_best_threshold": {
+    "threshold": 0.34,
+    "precision": 0.9556,
+    "recall": 0.7544,
+    "net_benefit": 6970.61
+   }
+  },
+  {
+   "model": "LightGBM",
+   "complexity_rank": 3,
+   "validation": {
+    "pr_auc": 0.7744,
+    "roc_auc": 0.9814,
+    "brier": 0.000332
+   },
+   "fit_seconds": 9.5,
+   "validation_at_best_threshold": {
+    "threshold": 0.26,
+    "precision": 0.7818,
+    "recall": 0.7544,
+    "net_benefit": 6920.61
+   }
+  },
+  {
+   "model": "LightGBM + class weights",
+   "complexity_rank": 3,
+   "validation": {
+    "pr_auc": 0.7721,
+    "roc_auc": 0.9789,
+    "brier": 0.000408
+   },
+   "fit_seconds": 10.3,
+   "validation_at_best_threshold": {
+    "threshold": 0.26,
+    "precision": 0.7414,
+    "recall": 0.7544,
+    "net_benefit": 6905.61
+   }
+  }
+ ],
+ "threshold": {
+  "value": 0.26,
+  "method": "Maximises estimated net benefit on the validation split with default assumptions (prevention effectiveness 90%, review cost 5 per false alarm). Test data was not used.",
+  "f1_optimal_on_validation": 0.5356,
+  "validation_fraud_cases": 57,
+  "limitation": "The validation split contains only a few dozen frauds, so the selected threshold is a reasonable starting point rather than a precise optimum.",
+  "bounds": [
+   0.01,
+   0.99
+  ]
+ },
+ "test_metrics": {
+  "pr_auc": 0.8031,
+  "roc_auc": 0.9865,
+  "brier": 0.000417,
+  "threshold": 0.26,
+  "confusion_matrix": {
+   "tp": 54,
+   "fp": 9,
+   "fn": 20,
+   "tn": 56663
+  },
+  "alerts": 63,
+  "precision": 0.8571,
+  "recall": 0.7297,
+  "f1": 0.7883,
+  "false_positive_rate": 0.000159,
+  "caught_fraud_value": 5044.6,
+  "prevented_loss": 4540.14,
+  "missed_fraud_loss": 2683.07,
+  "false_alarm_cost": 45.0,
+  "net_benefit": 4495.14,
+  "total_fraud_value": 7727.67,
+  "assumptions": {
+   "prevention_effectiveness": 0.9,
+   "review_cost_per_false_alarm": 5.0
+  }
+ },
+ "test_metrics_at_0_5": {
+  "threshold": 0.5,
+  "confusion_matrix": {
+   "tp": 54,
+   "fp": 7,
+   "fn": 20,
+   "tn": 56665
+  },
+  "alerts": 61,
+  "precision": 0.8852,
+  "recall": 0.7297,
+  "f1": 0.8,
+  "false_positive_rate": 0.000124,
+  "caught_fraud_value": 5044.6,
+  "prevented_loss": 4540.14,
+  "missed_fraud_loss": 2683.07,
+  "false_alarm_cost": 35.0,
+  "net_benefit": 4505.14,
+  "total_fraud_value": 7727.67,
+  "assumptions": {
+   "prevention_effectiveness": 0.9,
+   "review_cost_per_false_alarm": 5.0
+  }
+ },
+ "train_metrics": {
+  "pr_auc": 1.0,
+  "roc_auc": 1.0,
+  "brier": 2e-06
+ },
+ "overfitting_check": {
+  "train_pr_auc": 1.0,
+  "validation_pr_auc": 0.7744,
+  "test_pr_auc": 0.8031,
+  "note": "Boosted trees fit the 342 training frauds almost perfectly; the meaningful numbers are the validation and test scores, which are what the model achieves on unseen, later transactions."
+ },
+ "calibration_note": "Scores are model outputs between 0 and 1. With very few frauds they are not guaranteed to be calibrated real-world probabilities; compare Brier scores and treat them as risk scores.",
+ "latency_ms_single_prediction": 0.974,
+ "shap": {
+  "method": "shap.TreeExplainer (interventional, log-odds output)",
+  "output_space": "log-odds",
+  "background_rows": 300,
+  "note": "SHAP shows how the model used each input for this prediction; it is not proof of cause."
+ },
+ "global_importance": [
+  {
+   "feature": "V14",
+   "label": "V14 (anonymised)",
+   "mean_abs_shap": 0.700829
+  },
+  {
+   "feature": "V4",
+   "label": "V4 (anonymised)",
+   "mean_abs_shap": 0.482728
+  },
+  {
+   "feature": "V8",
+   "label": "V8 (anonymised)",
+   "mean_abs_shap": 0.299643
+  },
+  {
+   "feature": "V12",
+   "label": "V12 (anonymised)",
+   "mean_abs_shap": 0.277293
+  },
+  {
+   "feature": "Hour",
+   "label": "Hour of day",
+   "mean_abs_shap": 0.233013
+  },
+  {
+   "feature": "V26",
+   "label": "V26 (anonymised)",
+   "mean_abs_shap": 0.216874
+  },
+  {
+   "feature": "V10",
+   "label": "V10 (anonymised)",
+   "mean_abs_shap": 0.208339
+  },
+  {
+   "feature": "V11",
+   "label": "V11 (anonymised)",
+   "mean_abs_shap": 0.18655
+  },
+  {
+   "feature": "V22",
+   "label": "V22 (anonymised)",
+   "mean_abs_shap": 0.163311
+  },
+  {
+   "feature": "Amount",
+   "label": "Amount",
+   "mean_abs_shap": 0.158603
+  },
+  {
+   "feature": "V24",
+   "label": "V24 (anonymised)",
+   "mean_abs_shap": 0.147189
+  },
+  {
+   "feature": "V7",
+   "label": "V7 (anonymised)",
+   "mean_abs_shap": 0.130827
+  },
+  {
+   "feature": "V19",
+   "label": "V19 (anonymised)",
+   "mean_abs_shap": 0.130286
+  },
+  {
+   "feature": "V3",
+   "label": "V3 (anonymised)",
+   "mean_abs_shap": 0.124359
+  },
+  {
+   "feature": "V13",
+   "label": "V13 (anonymised)",
+   "mean_abs_shap": 0.118131
+  },
+  {
+   "feature": "V28",
+   "label": "V28 (anonymised)",
+   "mean_abs_shap": 0.115864
+  },
+  {
+   "feature": "V21",
+   "label": "V21 (anonymised)",
+   "mean_abs_shap": 0.112408
+  },
+  {
+   "feature": "V20",
+   "label": "V20 (anonymised)",
+   "mean_abs_shap": 0.102708
+  },
+  {
+   "feature": "V16",
+   "label": "V16 (anonymised)",
+   "mean_abs_shap": 0.089999
+  },
+  {
+   "feature": "V15",
+   "label": "V15 (anonymised)",
+   "mean_abs_shap": 0.088293
+  },
+  {
+   "feature": "V18",
+   "label": "V18 (anonymised)",
+   "mean_abs_shap": 0.082508
+  },
+  {
+   "feature": "V25",
+   "label": "V25 (anonymised)",
+   "mean_abs_shap": 0.080757
+  },
+  {
+   "feature": "V1",
+   "label": "V1 (anonymised)",
+   "mean_abs_shap": 0.073832
+  },
+  {
+   "feature": "V5",
+   "label": "V5 (anonymised)",
+   "mean_abs_shap": 0.072419
+  },
+  {
+   "feature": "V17",
+   "label": "V17 (anonymised)",
+   "mean_abs_shap": 0.071479
+  },
+  {
+   "feature": "V9",
+   "label": "V9 (anonymised)",
+   "mean_abs_shap": 0.058696
+  },
+  {
+   "feature": "V23",
+   "label": "V23 (anonymised)",
+   "mean_abs_shap": 0.057852
+  },
+  {
+   "feature": "V2",
+   "label": "V2 (anonymised)",
+   "mean_abs_shap": 0.046093
+  },
+  {
+   "feature": "V27",
+   "label": "V27 (anonymised)",
+   "mean_abs_shap": 0.042812
+  },
+  {
+   "feature": "V6",
+   "label": "V6 (anonymised)",
+   "mean_abs_shap": 0.03997
+  }
+ ],
+ "reference_ranges": {
+  "Hour": {
+   "p05": 1.0651944444444446,
+   "median": 13.557777777777778,
+   "p95": 22.66861111111111
+  },
+  "Amount": {
+   "p05": 0.98,
+   "median": 21.94,
+   "p95": 360.0
+  },
+  "V1": {
+   "p05": -2.928157143700484,
+   "median": -0.179005514496202,
+   "p95": 1.9068584443904308
+  },
+  "V2": {
+   "p05": -1.8990209473458377,
+   "median": 0.108148641120101,
+   "p95": 1.7872974705666542
+  },
+  "V3": {
+   "p05": -1.684009503067339,
+   "median": 0.623727666882035,
+   "p95": 2.249223539607085
+  },
+  "V4": {
+   "p05": -2.072775741241762,
+   "median": 0.122297678746195,
+   "p95": 2.493914899198326
+  },
+  "V5": {
+   "p05": -1.795063453324973,
+   "median": -0.225026662014023,
+   "p95": 1.924480812501666
+  },
+  "V6": {
+   "p05": -1.303306518944713,
+   "median": -0.203857817243836,
+   "p95": 3.181493030400043
+  },
+  "V7": {
+   "p05": -1.403112689082455,
+   "median": -0.0312802841486651,
+   "p95": 1.229619831937299
+  },
+  "V8": {
+   "p05": -0.8009217949014696,
+   "median": 0.0561593923053454,
+   "p95": 1.0431074937886455
+  },
+  "V9": {
+   "p05": -1.779978869647622,
+   "median": -0.0801206382085041,
+   "p95": 1.9702156484703863
+  },
+  "V10": {
+   "p05": -1.346184426780309,
+   "median": -0.11172277873797,
+   "p95": 1.4590503536283819
+  },
+  "V11": {
+   "p05": -1.425338158359757,
+   "median": 0.120447134387625,
+   "p95": 1.7852001608798196
+  },
+  "V12": {
+   "p05": -2.392253143078054,
+   "median": 0.109750075333475,
+   "p95": 1.2590092366083487
+  },
+  "V13": {
+   "p05": -1.637429797067928,
+   "median": 0.0320252259188759,
+   "p95": 1.8335828821521014
+  },
+  "V14": {
+   "p05": -1.238045784802581,
+   "median": 0.0929121137405934,
+   "p95": 1.5774231850976943
+  },
+  "V15": {
+   "p05": -1.624365721438435,
+   "median": 0.245321468553927,
+   "p95": 1.4671992885105087
+  },
+  "V16": {
+   "p05": -1.470959178361873,
+   "median": 0.0649925304036656,
+   "p95": 1.2810144287042435
+  },
+  "V17": {
+   "p05": -0.9355383580599219,
+   "median": -0.018328242600542,
+   "p95": 1.2831788413024532
+  },
+  "V18": {
+   "p05": -1.407746467938349,
+   "median": -0.050915873951333,
+   "p95": 1.3241805700076241
+  },
+  "V19": {
+   "p05": -1.367034025289826,
+   "median": -0.0228759594950414,
+   "p95": 1.2847020638083477
+  },
+  "V20": {
+   "p05": -0.5165458398665675,
+   "median": -0.0360137472408632,
+   "p95": 0.8534390302549596
+  },
+  "V21": {
+   "p05": -0.5128722903842086,
+   "median": -0.0544417921975078,
+   "p95": 0.49681483587918984
+  },
+  "V22": {
+   "p05": -1.09427348303323,
+   "median": -0.0667592016578239,
+   "p95": 0.9586791158288883
+  },
+  "V23": {
+   "p05": -0.44761230849177036,
+   "median": -0.0362239279325224,
+   "p95": 0.4583479574337291
+  },
+  "V24": {
+   "p05": -1.152621306860322,
+   "median": 0.0595092927063085,
+   "p95": 0.947626916325726
+  },
+  "V25": {
+   "p05": -0.6797974198062146,
+   "median": 0.135492012971142,
+   "p95": 0.7529132357174172
+  },
+  "V26": {
+   "p05": -0.6728008351228132,
+   "median": -0.0587104823515277,
+   "p95": 0.9815792844005501
+  },
+  "V27": {
+   "p05": -0.4086751686280404,
+   "median": 0.00878717506120418,
+   "p95": 0.3783215430209735
+  },
+  "V28": {
+   "p05": -0.32897721332712143,
+   "median": 0.0211803297284598,
+   "p95": 0.23247923535206924
+  }
+ },
+ "assumption_defaults": {
+  "prevention_effectiveness": 0.9,
+  "review_cost_per_false_alarm": 5.0
+ },
+ "features": {
+  "order": [
+   "Hour",
+   "Amount",
+   "V1",
+   "V2",
+   "V3",
+   "V4",
+   "V5",
+   "V6",
+   "V7",
+   "V8",
+   "V9",
+   "V10",
+   "V11",
+   "V12",
+   "V13",
+   "V14",
+   "V15",
+   "V16",
+   "V17",
+   "V18",
+   "V19",
+   "V20",
+   "V21",
+   "V22",
+   "V23",
+   "V24",
+   "V25",
+   "V26",
+   "V27",
+   "V28"
+  ]
+ }
+}
