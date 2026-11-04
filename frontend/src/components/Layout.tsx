@@ -28,7 +28,7 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <p>
-        <strong>FraudLens</strong> · Credit card fraud detection with explainable AI · Built by Nimra Imran
+        <strong>FraudLens</strong> · Credit card fraud detection with explainable AI · Built by Haniya Imran
       </p>
       <p className="muted">
         Trained on the public{" "}

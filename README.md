@@ -126,4 +126,4 @@ Two Vercel projects from this repository:
 - Scores are risk scores, not guaranteed calibrated probabilities; money figures are estimates under stated assumptions.
 - This is decision support. A person should review blocks before customers are affected.
 
-Built by Nimra Imran.
+Built by Haniya Imran.
