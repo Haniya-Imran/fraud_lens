@@ -13,6 +13,8 @@ from ml import business
 from ml.explain import FraudExplainer
 from ml.features import CURRENCY, FEATURE_ORDER, LABELS, to_frame
 
+from ..native import ensure_openmp
+
 logger = logging.getLogger("fraudlens.model")
 
 REQUIRED = ["fraud_pipeline.joblib", "shap_background.joblib", "model_metadata.json", "analytics.json",
@@ -41,6 +43,7 @@ class ModelService:
             missing = [f for f in REQUIRED if not (self.models_dir / f).exists()]
             if missing:
                 raise ModelUnavailableError(f"Missing model artifacts: {', '.join(missing)}. Run `python -m ml.train`.")
+            ensure_openmp()
             read = lambda n: json.loads((self.models_dir / n).read_text(encoding="utf-8"))  # noqa: E731
             self.pipeline = joblib.load(self.models_dir / "fraud_pipeline.joblib")
             background = joblib.load(self.models_dir / "shap_background.joblib")
