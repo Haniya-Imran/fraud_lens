@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Info } from "lucide-react";
-import { ConfusionMatrix, CurveChart, Gauge, ImbalanceBar, NetBenefitChart, RateBars } from "../components/charts";
+import { ConfusionMatrix, CurveChart, Dial, HourBars, ImbalanceBar, NetBenefitChart, RateBars } from "../components/charts";
 import { AssumptionsPanel, ThresholdControl } from "../components/Controls";
 import { ErrorState, LoadingBlock } from "../components/States";
 import { ApiError, api } from "../lib/api";
@@ -62,6 +62,16 @@ export default function DashboardPage() {
   const periodFraud = m ? (split === "test" ? m.split.test.fraud : m.split.validation.fraud) : 0;
   const periodRows = m ? (split === "test" ? m.split.test.rows : m.split.validation.rows) : 0;
 
+  const periodSeg = (
+    <div className="seg" role="group" aria-label="Evaluation period">
+      {(["test", "validation"] as Split[]).map((s) => (
+        <button key={s} type="button" aria-pressed={split === s} className={split === s ? "on" : ""} onClick={() => setSplit(s)}>
+          {s === "test" ? "Test" : "Validation"}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="page">
       <div className="page-head">
@@ -69,9 +79,17 @@ export default function DashboardPage() {
           <h1>Fraud Overview</h1>
           <p className="muted">How the model performs on unseen, later transactions — and what your threshold choice is worth.</p>
         </div>
-        <Link to="/check" className="btn btn-green">
-          Check a transaction <ArrowRight size={16} aria-hidden="true" />
-        </Link>
+        <div className="head-actions">
+          {m && (
+            <span className="period-note mono">
+              {split} period · {num(periodRows)} tx · {periodFraud} fraud
+            </span>
+          )}
+          {periodSeg}
+          <Link to="/check" className="btn btn-green">
+            Check a transaction <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </div>
 
       {!m || !o ? (
@@ -82,93 +100,72 @@ export default function DashboardPage() {
         )
       ) : (
         <>
+          {metricsErr && <ErrorState error={metricsErr} onRetry={() => setRetry((r) => r + 1)} title="Metrics unavailable" />}
           <div className="kpi-grid">
             <div className="kpi">
-              <span>Transactions</span>
-              <strong className="mono">{num(o.dataset_totals.rows)}</strong>
+              <span>Fraud caught</span>
+              <strong className="mono ink-green">{metrics ? metrics.confusion_matrix.tp : "—"}</strong>
+              <em>{metrics ? `of ${periodFraud} frauds · recall ${pct(metrics.recall, 1)}` : " "}</em>
             </div>
             <div className="kpi">
-              <span>Fraud cases</span>
-              <strong className="mono ink-fraud">{num(o.dataset_totals.fraud)}</strong>
+              <span>Fraud missed</span>
+              <strong className="mono ink-fraud">{metrics ? metrics.confusion_matrix.fn : "—"}</strong>
+              <em>{metrics ? `slipped through · ${eur(metrics.missed_fraud_loss, 0)} lost` : " "}</em>
             </div>
             <div className="kpi">
-              <span>Avg fraud amount</span>
-              <strong className="mono">{eur(o.dataset_totals.amount_mean_fraud)}</strong>
+              <span>False alarms</span>
+              <strong className="mono ink-amber">{metrics ? metrics.confusion_matrix.fp : "—"}</strong>
+              <em>{metrics ? `honest customers stopped · precision ${pct(metrics.precision, 1)}` : " "}</em>
             </div>
-            <div className="kpi kpi-dark">
+            <div className="kpi kpi-hl">
               <span>Estimated money saved ({split} period)</span>
-              <strong className="mono ink-mint" data-testid="kpi-net">
+              <strong className="mono" data-testid="kpi-net">
                 {metrics ? eur(metrics.net_benefit) : "—"}
               </strong>
+              <em>net benefit · see breakdown below</em>
             </div>
           </div>
 
-          <section className="card">
-            <div className="card-head">
-              <h2>Imbalanced data: normal vs fraud</h2>
-              <span className="muted">That is why accuracy alone is misleading</span>
-            </div>
-            <ImbalanceBar legit={o.dataset_totals.legitimate} fraud={o.dataset_totals.fraud} />
-          </section>
-
-          <section className="tune-wrap">
-            <div className="tune">
-              <div className="tune-left">
-                <div className="tune-title">
-                  <h2>Threshold tuning</h2>
-                  <div className="seg" role="group" aria-label="Evaluation period">
-                    {(["test", "validation"] as Split[]).map((s) => (
-                      <button key={s} type="button" aria-pressed={split === s} className={split === s ? "on" : ""} onClick={() => setSplit(s)}>
-                        {s === "test" ? "Test" : "Validation"}
-                      </button>
-                    ))}
+          <div className="radar-grid">
+            <section className="card thr-card">
+              <div className="card-head">
+                <h2>Alarm threshold</h2>
+                <span className="muted">How strict should the alarm be?</span>
+              </div>
+              <Dial value={t} />
+              <ThresholdControl value={t} recommended={recommended} onChange={setThreshold} />
+              {metrics ? (
+                <div className="mini-stats">
+                  <div>
+                    <span>Precision</span>
+                    <b className="mono ink-accent">{pct(metrics.precision, 1)}</b>
+                  </div>
+                  <div>
+                    <span>Recall</span>
+                    <b className="mono ink-cyan">{pct(metrics.recall, 1)}</b>
+                  </div>
+                  <div>
+                    <span>F1</span>
+                    <b className="mono">{metrics.f1.toFixed(3)}</b>
                   </div>
                 </div>
-                <Gauge value={t} />
-                <span className="tune-value mono" aria-live="polite">
-                  {thr(t)}
-                </span>
-                <span className="muted-dark small">Block a payment when its fraud score ≥ this value</span>
-                <ThresholdControl value={t} recommended={recommended} onChange={setThreshold} dark />
+              ) : (
+                !metricsErr && <LoadingBlock label="Calculating metrics" height={60} />
+              )}
+              <p className="hint">
+                Real results of the trained model on the {split} period. Small fraud counts mean these numbers can move noticeably between periods.
+              </p>
+            </section>
+            <section className="card">
+              <div className="card-head">
+                <h2>Threshold vs precision &amp; recall</h2>
+                <span className="muted">{split} period</span>
               </div>
-              <div className="tune-right">
-                {metricsErr ? (
-                  <ErrorState error={metricsErr} onRetry={() => setRetry((r) => r + 1)} title="Metrics unavailable" />
-                ) : !metrics ? (
-                  <LoadingBlock label="Calculating metrics" height={220} />
-                ) : (
-                  <>
-                    <div className="tile tile-green">
-                      <span>Fraud caught</span>
-                      <strong className="mono">{metrics.confusion_matrix.tp}</strong>
-                      <em>
-                        of {periodFraud} frauds · recall {pct(metrics.recall, 1)}
-                      </em>
-                    </div>
-                    <div className="tile tile-red">
-                      <span>Fraud missed</span>
-                      <strong className="mono">{metrics.confusion_matrix.fn}</strong>
-                      <em>slipped through · {eur(metrics.missed_fraud_loss, 0)} lost</em>
-                    </div>
-                    <div className="tile tile-amber">
-                      <span>False alarms</span>
-                      <strong className="mono">{metrics.confusion_matrix.fp}</strong>
-                      <em>honest customers stopped · precision {pct(metrics.precision, 1)}</em>
-                    </div>
-                    <div className="tile tile-mint">
-                      <span>Estimated money saved</span>
-                      <strong className="mono">{eur(metrics.net_benefit, 0)}</strong>
-                      <em>net benefit, see breakdown below</em>
-                    </div>
-                    <p className="tune-note">
-                      Real results of the trained model on the {split} period ({num(periodRows)} transactions, {periodFraud} frauds). Small fraud counts mean
-                      these numbers can move noticeably between periods.
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          </section>
+              {curveErr ? <ErrorState error={curveErr} onRetry={() => setRetry((r) => r + 1)} /> : curve ? <CurveChart points={curve} threshold={t} /> : <LoadingBlock label="Loading chart" height={240} />}
+              <h3 className="mini-h">Fraud rate by hour of day (whole dataset)</h3>
+              <HourBars rows={o.fraud_rate_by_hour} />
+            </section>
+          </div>
 
           <div className="two-col">
             <section className="card">
@@ -219,21 +216,11 @@ export default function DashboardPage() {
           <div className="two-col">
             <section className="card">
               <div className="card-head">
-                <h2>Threshold vs precision &amp; recall</h2>
-                <span className="muted">{split} period</span>
-              </div>
-              {curveErr ? <ErrorState error={curveErr} onRetry={() => setRetry((r) => r + 1)} /> : curve ? <CurveChart points={curve} threshold={t} /> : <LoadingBlock label="Loading chart" height={240} />}
-            </section>
-            <section className="card">
-              <div className="card-head">
                 <h2>Threshold vs estimated net benefit</h2>
                 <span className="muted">{split} period</span>
               </div>
               {curve ? <NetBenefitChart points={curve} threshold={t} /> : !curveErr && <LoadingBlock label="Loading chart" height={240} />}
             </section>
-          </div>
-
-          <div className="two-col">
             <section className="card">
               <div className="card-head">
                 <h2>Confusion matrix</h2>
@@ -243,14 +230,35 @@ export default function DashboardPage() {
               </div>
               {metrics && <ConfusionMatrix cm={metrics.confusion_matrix} />}
             </section>
+          </div>
+
+          <div className="two-col">
             <section className="card">
               <div className="card-head">
-                <h2>Where fraud happens</h2>
-                <span className="muted">fraud rate · whole dataset</span>
+                <h2>Imbalanced data: normal vs fraud</h2>
+                <span className="muted">That is why accuracy alone is misleading</span>
               </div>
-              <h3 className="mini-h">By hour of day</h3>
-              <RateBars rows={o.fraud_rate_by_hour} unit="h" />
-              <h3 className="mini-h">By amount (€)</h3>
+              <div className="data-facts">
+                <div>
+                  <span>Transactions</span>
+                  <b className="mono">{num(o.dataset_totals.rows)}</b>
+                </div>
+                <div>
+                  <span>Fraud cases</span>
+                  <b className="mono ink-fraud">{num(o.dataset_totals.fraud)}</b>
+                </div>
+                <div>
+                  <span>Avg fraud amount</span>
+                  <b className="mono">{eur(o.dataset_totals.amount_mean_fraud)}</b>
+                </div>
+              </div>
+              <ImbalanceBar legit={o.dataset_totals.legitimate} fraud={o.dataset_totals.fraud} />
+            </section>
+            <section className="card">
+              <div className="card-head">
+                <h2>Fraud rate by amount (€)</h2>
+                <span className="muted">whole dataset</span>
+              </div>
               <RateBars rows={o.fraud_rate_by_amount} unit="" />
             </section>
           </div>

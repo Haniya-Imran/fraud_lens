@@ -2,25 +2,63 @@ import { useId } from "react";
 import { eur, num, pct, thr } from "../lib/format";
 import type { Confusion, CurvePoint, GroupRate, Importance } from "../lib/types";
 
-/** Semicircle gauge: needle at the threshold position (0 → left, 1 → right). */
-export function Gauge({ value, size = 260 }: { value: number; size?: number }) {
+/** Ring dial: the coloured arc shows where the threshold sits between 0 and 1. */
+export function Dial({ value, size = 220 }: { value: number; size?: number }) {
   const id = useId().replace(/:/g, "");
-  const deg = -90 + value * 180;
+  const r = 92;
+  const c = 2 * Math.PI * r;
   return (
-    <svg width={size} height={size * 0.56} viewBox="0 0 260 146" role="img" aria-label={`Threshold gauge at ${thr(value)}`} className="gauge">
-      <defs>
-        <linearGradient id={`g${id}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#3DDC97" />
-          <stop offset=".5" stopColor="#F5B544" />
-          <stop offset="1" stopColor="#E5484D" />
-        </linearGradient>
-      </defs>
-      <path d="M24 130 A106 106 0 0 1 236 130" fill="none" stroke={`url(#g${id})`} strokeWidth="20" strokeLinecap="round" />
-      <g className="gauge-needle" style={{ transform: `rotate(${deg}deg)` }}>
-        <line x1="130" y1="130" x2="130" y2="40" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" />
-      </g>
-      <circle cx="130" cy="130" r="12" fill="#FFFFFF" />
-    </svg>
+    <div className="dial-ring" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 220 220" width={size} height={size} role="img" aria-label={`Threshold dial at ${thr(value)}`}>
+        <defs>
+          <linearGradient id={`d${id}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#4F46E5" />
+            <stop offset="1" stopColor="#06B6D4" />
+          </linearGradient>
+        </defs>
+        <circle cx="110" cy="110" r={r} fill="none" stroke="#EEF2FF" strokeWidth="16" />
+        <circle
+          cx="110"
+          cy="110"
+          r={r}
+          fill="none"
+          stroke={`url(#d${id})`}
+          strokeWidth="16"
+          strokeLinecap="round"
+          strokeDasharray={`${Math.max(0.01, value) * c} ${c}`}
+          transform="rotate(-90 110 110)"
+          className="dial-arc"
+        />
+      </svg>
+      <div className="dial-center">
+        <span className="mono dial-value" aria-live="polite">
+          {thr(value)}
+        </span>
+        <span className="dial-sub">block if score ≥</span>
+      </div>
+    </div>
+  );
+}
+
+/** Column bars for the fraud rate in each 3-hour block of the day. */
+export function HourBars({ rows }: { rows: GroupRate[] }) {
+  const max = Math.max(...rows.map((r) => r.fraud_rate));
+  return (
+    <figure className="hour-bars" aria-label="Fraud rate by hour of day">
+      <div className="hb-cols">
+        {rows.map((r) => (
+          <div key={r.group} className="hb-col" title={`${r.group}h: ${pct(r.fraud_rate, 2)} (${num(r.fraud)} frauds)`}>
+            <span className="hb-val mono">{pct(r.fraud_rate, 2)}</span>
+            <span className="hb-bar" style={{ height: `${(r.fraud_rate / max) * 100}%` }} />
+          </div>
+        ))}
+      </div>
+      <div className="hb-labels mono">
+        {rows.map((r) => (
+          <span key={r.group}>{r.group}</span>
+        ))}
+      </div>
+    </figure>
   );
 }
 

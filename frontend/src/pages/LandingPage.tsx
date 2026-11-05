@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Logo, Footer } from "../components/Layout";
-import { Vault } from "../components/three/Vault";
+import { Radar } from "../components/three/Radar";
 import { api } from "../lib/api";
 import { eur, num, pct } from "../lib/format";
 import { useApi } from "../lib/useApi";
@@ -37,8 +37,10 @@ export default function LandingPage() {
         <main id="main" tabIndex={-1}>
           <section className="hero">
             <div className="hero-copy">
-              <span className="eyebrow-chip mono">● FRAUD DETECTION · EXPLAINABLE AI</span>
-              <h1>Catch more fraud. Lose less money.</h1>
+              <span className="eyebrow-chip mono">FRAUD DETECTION · EXPLAINABLE AI</span>
+              <h1>
+                Catch more fraud. <span className="grad">Lose less money.</span>
+              </h1>
               <p className="lead">
                 FraudLens finds the rare fraudulent card payments hidden among normal ones, lets you choose how strict the alarm should be, and
                 estimates how much money that choice saves.
@@ -68,10 +70,10 @@ export default function LandingPage() {
               {info.error && <p className="hint">Live figures are unavailable right now: {info.error.message}</p>}
             </div>
             <div className="hero-art">
-              <Vault
+              <Radar
                 netBenefit={m?.test_metrics.net_benefit}
                 threshold={m?.threshold.value}
-                blocked={fraudSample ? { amount: fraudSample.features.Amount, score: fraudSample.score } : undefined}
+                blocked={fraudSample ? { amount: fraudSample.features.Amount, score: fraudSample.score, rowId: fraudSample.row_id } : undefined}
               />
             </div>
           </section>

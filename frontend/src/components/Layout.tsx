@@ -56,12 +56,11 @@ export function AppLayout() {
         <nav aria-label="Main" className="side-nav">
           {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => `side-link ${isActive ? "active" : ""}`}>
-              <Icon size={17} aria-hidden="true" />
-              <span>{label}</span>
+              <Icon size={19} aria-hidden="true" />
+              <span className="side-label">{label}</span>
             </NavLink>
           ))}
         </nav>
-        <span className="side-note">Credit Card Fraud Detection dataset · Sept 2013</span>
       </aside>
       <div className="app-main">
         <main id="main" tabIndex={-1} className="page-enter">

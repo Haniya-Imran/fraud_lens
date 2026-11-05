@@ -13,7 +13,7 @@ No login or sign-up — the app opens straight to the landing page.
 
 | Page | What it does |
 | --- | --- |
-| `/` Landing | 3D vault hero (drag to rotate), real headline figures, how it works |
+| `/` Landing | 3D fraud-radar hero (drag to rotate), real headline figures, how it works |
 | `/dashboard` Overview | KPIs, imbalance bar, threshold gauge + slider, fraud caught / missed / false alarms, money breakdown, editable assumptions, precision/recall and net-benefit curves, confusion matrix, fraud rate by hour/amount, highest-risk test transactions. Switch between the test and validation periods. |
 | `/check` | Score one transaction (3 real test samples or manual values incl. V1–V28), 3D risk dial, Block/Approve with a human-review warning near the threshold, SHAP reasons, financial impact, downloadable HTML report, session history (this browser tab only), clear/reset |
 | `/batch` | Upload a CSV (≤1,000 rows, validated in the browser), score it, filter, download results CSV; sample CSV provided |
