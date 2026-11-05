@@ -12,11 +12,11 @@ export function Dial({ value, size = 220 }: { value: number; size?: number }) {
       <svg viewBox="0 0 220 220" width={size} height={size} role="img" aria-label={`Threshold dial at ${thr(value)}`}>
         <defs>
           <linearGradient id={`d${id}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#4F46E5" />
-            <stop offset="1" stopColor="#06B6D4" />
+            <stop offset="0" stopColor="#22D3EE" />
+            <stop offset="1" stopColor="#A3E635" />
           </linearGradient>
         </defs>
-        <circle cx="110" cy="110" r={r} fill="none" stroke="#EEF2FF" strokeWidth="16" />
+        <circle cx="110" cy="110" r={r} fill="none" stroke="#18233A" strokeWidth="16" />
         <circle
           cx="110"
           cy="110"
